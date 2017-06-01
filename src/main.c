@@ -5,9 +5,6 @@
 #include <libopencm3/stm32/usart.h>
 #include <libopencm3/stm32/rcc.h>
 #include <libopencm3/stm32/gpio.h>
-#include <libopencm3/stm32/spi.h>
-#include <libopencm3/stm32/f1/nvic.h>
-#include <pcd8544.h>
 #include <stdio.h>
 #include <errno.h>
 
@@ -26,9 +23,6 @@ static void clock_setup(void) {
 
 static void gpio_setup(void) {
   /* Configure GPIOs */
-  gpio_set_mode(MOTOR_PORT, GPIO_MODE_OUTPUT_50_MHZ, GPIO_CNF_OUTPUT_PUSHPULL,
-                MOTOR_A0 | MOTOR_A1 | MOTOR_B0 | MOTOR_B1);
-  gpio_clear(MOTOR_PORT, MOTOR_A0 | MOTOR_A1 | MOTOR_B0 | MOTOR_B1);
 }
 
 int _write(int file, char *ptr, int len) {
