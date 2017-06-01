@@ -1,64 +1,76 @@
 //
 // Created by sl on 18.02.17.
 //
-
-#include <libopencm3/stm32/usart.h>
-#include <libopencm3/stm32/rcc.h>
-#include <libopencm3/stm32/gpio.h>
 #include <stdio.h>
-#include <errno.h>
 
-static void clock_setup(void) {
-  rcc_clock_setup_in_hse_8mhz_out_72mhz();
+#include <libopencm3/cm3/nvic.h>
+#include "atom.h"
+#include "atomport.h"
+#include "atomport-private.h"
+#include "atomtimer.h"
 
-  rcc_periph_clock_enable(RCC_GPIOA);
-  rcc_periph_clock_enable(RCC_GPIOB);
+#define STACK_SIZE      1024
+#define THREAD_PRIO     42
 
-  /* Enable SPI2 Periph and gpio clocks */
-  rcc_periph_clock_enable(RCC_SPI2);
+static ATOM_TCB main_tcb;
 
-  rcc_periph_clock_enable(RCC_USART2);
-  rcc_periph_clock_enable(RCC_USART3);
+static uint8_t thread_stacks[2][STACK_SIZE];
+
+static void main_thread_func(uint32_t data);
+
+/**
+ * Example for a stand-alone board application
+ */
+extern int board_setup(void);
+int main(void)
+{
+    int8_t status;
+    uint32_t loop;
+
+    /**
+     * Brief delay to give the debugger a chance to stop the core before we
+     * muck around with the chip's configuration.
+     */
+    for(loop = 0;loop < 1000000;++loop){
+        __asm__("nop");
+    }
+
+    board_setup();
+
+    /**
+     * Initialise OS and set up idle thread
+     */
+    status = atomOSInit(&thread_stacks[0][0], STACK_SIZE, FALSE);
+
+    if(status == ATOM_OK){
+        /* Set up main thread */
+        status = atomThreadCreate(&main_tcb, THREAD_PRIO, main_thread_func, 0,
+                                  &thread_stacks[1][0], STACK_SIZE, TRUE);
+
+        if(status == ATOM_OK){
+            atomOSStart();
+        }
+    }
+
+    while(1)
+        ;
+
+    /* We will never get here */
+    return 0;
 }
 
-static void gpio_setup(void) {
-  /* Configure GPIOs */
-}
+extern void test_led_toggle(void);
+static void main_thread_func(uint32_t data __maybe_unused)
+{
+    /* Print message */
+    printf("Hello, world!\n");
 
-int _write(int file, char *ptr, int len) {
-  int i;
+    /* Loop forever and blink the LED */
+    while(1){
+        test_led_toggle();
 
-  if (file == 1) {
-    for (i = 0; i < len; i++)
-      usart_send_blocking(USART2, ptr[i]);
-    return i;
-  }
-  errno = EIO;
-  return -1;
-}
+        atomTimerDelay(SYSTEM_TICKS_PER_SEC);
+    }
 
-static void usart_setup(void) {
-  gpio_set_mode(GPIOA, GPIO_MODE_OUTPUT_50_MHZ,
-                GPIO_CNF_OUTPUT_ALTFN_PUSHPULL, GPIO_USART2_TX);
-  gpio_set_mode(GPIOA, GPIO_MODE_INPUT,
-                GPIO_CNF_INPUT_PULL_UPDOWN, GPIO_USART2_RX);
-
-  usart_set_baudrate(USART2, 9600);
-  usart_set_databits(USART2, 8);
-  usart_set_stopbits(USART2, USART_STOPBITS_1);
-  usart_set_mode(USART2, USART_MODE_TX_RX);
-  usart_set_parity(USART2, USART_PARITY_NONE);
-  usart_set_flow_control(USART2, USART_FLOWCONTROL_NONE);
-  usart_enable(USART2);
-}
-
-
-int main(void) {
-  clock_setup();
-  gpio_setup();
-  usart_setup();
-
-  while (1) {
-  }
 }
 

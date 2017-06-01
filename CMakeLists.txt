@@ -11,7 +11,7 @@ add_definitions(-DSTM32F1)
 
 set(LIBOPENCM3_ROOT ${CMAKE_SOURCE_DIR}/lib/libopencm3)
 
-#set(PCD8544_ROOT ${CMAKE_SOURCE_DIR}/src/pcd8544)
+set(ATOMTHREADS_ROOT ${CMAKE_SOURCE_DIR}/lib/atomthreads)
 
 #set(MHZ19_ROOT ${CMAKE_SOURCE_DIR}/src/mh-z19)
 
@@ -19,7 +19,8 @@ set(LIBOPENCM3_ROOT ${CMAKE_SOURCE_DIR}/lib/libopencm3)
 
 include_directories(
         ${LIBOPENCM3_ROOT}/include
- #       ${PCD8544_ROOT}
+        ${ATOMTHREADS_ROOT}/kernel
+        ${ATOMTHREADS_ROOT}/ports/cortex-m
  #       ${MHZ19_ROOT}
         inc)
 
