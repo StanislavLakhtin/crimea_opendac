@@ -13,6 +13,8 @@
 
 #include "atomport.h"
 
+extern int encoder_setup(void);
+
 /**
  * Set up USART2.
  */
@@ -95,6 +97,7 @@ int board_setup(void)
 
     /* configure system clock, user LED and UART */
     clock_setup();
+    encoder_setup();
     test_led_setup();
     usart_setup(115200);
 
