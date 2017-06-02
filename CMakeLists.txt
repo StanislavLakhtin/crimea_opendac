@@ -4,31 +4,31 @@ project(crimea_opendac)
 enable_language(ASM)
 
 IF(NOT CMAKE_CROSSCOMPILING)
-    message(FATAL_ERROR "Cross compiling only. Please use -DCMAKE_TOOLCHAIN_FILE=/PATH/TO/TOOLCHAIN_FILE .")
+    message(FATAL_ERROR "Cross compiling only. Please use -DCMAKE_TOOLCHAIN_FILE=/PATH/TO/libopencm3.cmake")
 ENDIF(NOT CMAKE_CROSSCOMPILING)
 
 add_definitions(-DSTM32F1)
 
 set(LIBOPENCM3_ROOT ${CMAKE_SOURCE_DIR}/lib/libopencm3)
-
 set(ATOMTHREADS_ROOT ${CMAKE_SOURCE_DIR}/lib/atomthreads)
 
 #set(MHZ19_ROOT ${CMAKE_SOURCE_DIR}/src/mh-z19)
-
 #file(GLOB_RECURSE USER_SOURCES src/*.c)
 
 include_directories(
         ${LIBOPENCM3_ROOT}/include
-        ${ATOMTHREADS_ROOT}/kernel
         ${ATOMTHREADS_ROOT}/ports/cortex-m
- #       ${MHZ19_ROOT}
-        inc)
+        ${ATOMTHREADS_ROOT}/kernel
+#       ${MHZ19_ROOT}
+)
 
 link_directories(
-        ${LIBOPENCM3_ROOT}/lib)
+        ${LIBOPENCM3_ROOT}/lib
+)
 
+set(CMAKE_ASM_FLAGS "-mcpu=cortex-m3 -mthumb")
 set(STM32F1_FLAGS "-mcpu=cortex-m3 -mthumb -mthumb-interwork -msoft-float")
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall ${STM32F1_FLAGS} -Os -ffunction-sections -fdata-sections -std=c99")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${STM32F1_FLAGS} -Os -Wall -Werror -Wredundant-decls -Wstrict-prototypes -fno-common -ffunction-sections -fdata-sections -std=c11")
 set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS} -Wall -std=c++14 ${STM32F1_FLAGS}")
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -T ${CMAKE_SOURCE_DIR}/libopencm3.ld -lopencm3_stm32f1 -nostartfiles --specs=rdimon.specs -Wl,--gc-sections")
 

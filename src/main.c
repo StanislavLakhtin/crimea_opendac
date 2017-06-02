@@ -1,13 +1,14 @@
 //
 // Created by sl on 18.02.17.
 //
+
 #include <stdio.h>
 
 #include <libopencm3/cm3/nvic.h>
-#include "atom.h"
-#include "atomport.h"
-#include "atomport-private.h"
-#include "atomtimer.h"
+#include <atom.h>
+#include <atomport.h>
+#include <atomport-private.h>
+#include <atomtimer.h>
 
 #define STACK_SIZE      1024
 #define THREAD_PRIO     42
@@ -68,7 +69,6 @@ static void main_thread_func(uint32_t data __maybe_unused)
     /* Loop forever and blink the LED */
     while(1){
         test_led_toggle();
-
         atomTimerDelay(SYSTEM_TICKS_PER_SEC);
     }
 
