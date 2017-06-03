@@ -20,6 +20,6 @@ void encoder_setup(uint32_t *volumeControl) {
 void encoder_handler(void) {
   if (gpio_get(ENCODER_PORT, ENCODER_A) && !gpio_get(ENCODER_PORT, ENCODER_B))
     *vControl += 10;
-  else if (gpio_get(ENCODER_PORT, ENCODER_A) && gpio_get(ENCODER_PORT, ENCODER_B))
+  else if (gpio_get(ENCODER_PORT, ENCODER_A) && gpio_get(ENCODER_PORT, ENCODER_B) && (*vControl>11))
     *vControl -= 10;
 }

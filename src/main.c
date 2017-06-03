@@ -33,12 +33,12 @@ void exti_setup(void) {
   nvic_enable_irq(NVIC_EXTI9_5_IRQ);
   exti_enable_request(EXTI8);
   exti_set_trigger(EXTI8, EXTI_TRIGGER_FALLING);
-  exti_select_source(EXTI8, GPIOB);
+  exti_select_source(EXTI8, GPIOA);
 }
 
 void exti9_5_isr(void) {
   encoder_handler();
-  exti_reset_request(EXTI0); // нам следует вручную очистить причину вызова прерывания
+  exti_reset_request(EXTI8); // нам следует вручную очистить причину вызова прерывания
 }
 
 int main(void) {
