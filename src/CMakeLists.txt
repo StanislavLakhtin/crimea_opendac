@@ -6,6 +6,8 @@ file(GLOB USER_SOURCES ./*.c ./board/*.c
         ${ATOMTHREADS_ROOT}/ports/cortex-m/*.S
         ${ATOMTHREADS_ROOT}/ports/cortex-m/common/st*.c
         ${ATOMTHREADS_ROOT}/ports/cortex-m/atom*.c
+        ${SSD1306_ROOT}/src/ssd*.c
+        ${SSD1306_ROOT}/src/penta*.c
         )
 
 add_executable(${PROJECT_NAME}.elf ${USER_SOURCES})

@@ -31,19 +31,23 @@
 
 #include <libopencm3/stm32/rcc.h>
 #include <libopencm3/stm32/gpio.h>
-#include <libopencm3/stm32/usart.h>
 #include <libopencm3/cm3/systick.h>
 #include <libopencm3/cm3/cortex.h>
 #include <libopencm3/cm3/nvic.h>
-
+#include <crimea_dac.h>
 #include <atomport.h>
+#include <libopencm3/stm32/i2c.h>
+#include <ssd1306_i2c.h>
 
 static void clock_setup(void) {
   rcc_clock_setup_in_hse_8mhz_out_72mhz();
 
   rcc_periph_clock_enable(RCC_GPIOA);
+  rcc_periph_clock_enable(RCC_GPIOB);
+
+  /* set clock for I2C */
+  rcc_periph_clock_enable(RCC_I2C2);
   rcc_periph_clock_enable(RCC_AFIO);
-  rcc_periph_clock_enable(RCC_USART2);
 
   AFIO_MAPR |= AFIO_MAPR_SWJ_CFG_FULL_SWJ_NO_JNTRST;
 }
@@ -52,7 +56,7 @@ static void clock_setup(void) {
  * Set up USART2.
  * This one is connected via the virtual serial port on the Nucleo Board
  */
-static void usart_setup(uint32_t baud) {
+/*static void usart2_setup(uint32_t baud) {
 
   usart_disable(USART2);
 
@@ -67,7 +71,7 @@ static void usart_setup(uint32_t baud) {
   usart_set_mode(USART2, USART_MODE_TX_RX);
 
   usart_enable(USART2);
-}
+}*/
 
 /**
  * initialise and start SysTick counter. This will trigger the
@@ -81,18 +85,60 @@ static void systick_setup(void) {
 }
 
 void gpio_setup(void) {
-  /* LED is connected to GPIO5 on port A */
-  gpio_set_mode(GPIOA, GPIO_MODE_OUTPUT_50_MHZ,
-                GPIO_CNF_OUTPUT_PUSHPULL, GPIO5);
-
-  gpio_set_mode(GPIOA, GPIO_MODE_INPUT,
-                GPIO_CNF_INPUT_FLOAT, GPIO8 | GPIO9 | GPIO10);
-
-  gpio_set(GPIOA, GPIO5);
+  gpio_set_mode(USB_PULLUP_PORT, GPIO_MODE_OUTPUT_50_MHZ,
+              GPIO_CNF_OUTPUT_PUSHPULL, USB_PULLUP_GPIO);
+  pullUp_OFF();
 }
 
-void test_led_toggle(void) {
-  gpio_toggle(GPIOA, GPIO5);
+static void i2c_setup(void) {
+  /* Set alternate functions for the SCL and SDA pins of I2C2. */
+  gpio_set_mode(GPIOB, GPIO_MODE_OUTPUT_50_MHZ,
+                GPIO_CNF_OUTPUT_ALTFN_OPENDRAIN,
+                GPIO_I2C2_SCL | GPIO_I2C2_SDA);
+
+  /* Disable the I2C before changing any configuration. */
+  i2c_peripheral_disable(I2C2);
+
+  /* APB1 is running at 36MHz. */
+  i2c_set_clock_frequency(I2C2, I2C_CR2_FREQ_36MHZ);
+
+  /* 400KHz - I2C Fast Mode */
+  i2c_set_fast_mode(I2C2);
+
+  /*
+	 * fclock for I2C is 36MHz APB2 -> cycle time 28ns, low time at 400kHz
+	 * incl trise -> Thigh = 1600ns; CCR = tlow/tcycle = 0x1C,9;
+	 * Datasheet suggests 0x1e.
+	 */
+  i2c_set_ccr(I2C2, 0x1e);
+
+  /*
+   * fclock for I2C is 36MHz -> cycle time 28ns, rise time for
+   * 400kHz => 300ns and 100kHz => 1000ns; 300ns/28ns = 10;
+   * Incremented by 1 -> 11.
+   */
+  i2c_set_trise(I2C2, 0x0b);
+
+  /*
+   * Enable ACK on I2C
+   */
+  i2c_enable_ack(I2C2);
+
+  /*
+   * This is our slave address - needed only if we want to receive from
+   * other masters.
+   */
+  i2c_set_own_7bit_slave_address(I2C2, 0x32);
+
+  /* If everything is configured -> enable the peripheral. */
+  i2c_peripheral_enable(I2C2);
+}
+
+void display_WakeUp(void) {
+  ssd1306_init(I2C2, DEFAULT_7bit_OLED_SLAVE_ADDRESS, 128, 32);
+  ssd1306_refresh();
+  ssd1306_clear();
+  ssd1306_refresh();
 }
 
 /**
@@ -109,7 +155,8 @@ int board_setup(void) {
   /* configure system clock, user LED and UART */
   clock_setup();
   gpio_setup();
-  usart_setup(115200);
+  i2c_setup();
+  display_WakeUp();
 
   /* initialise SysTick counter */
   systick_setup();
@@ -122,4 +169,3 @@ int board_setup(void) {
 
   return 0;
 }
-

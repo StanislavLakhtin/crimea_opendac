@@ -13,14 +13,17 @@ add_definitions(-DSTD_CON=USART2 -DMST_SIZE=0x400)
 
 set(LIBOPENCM3_ROOT ${CMAKE_SOURCE_DIR}/lib/libopencm3)
 set(ATOMTHREADS_ROOT ${CMAKE_SOURCE_DIR}/lib/atomthreads)
+set(SSD1306_ROOT ${CMAKE_SOURCE_DIR}/lib/ssd1306_libopencm3)
 
 #file(GLOB_RECURSE USER_SOURCES src/*.c)
 
 include_directories(
+        ${CMAKE_SOURCE_DIR}/src
         ${LIBOPENCM3_ROOT}/include
         ${ATOMTHREADS_ROOT}/ports/cortex-m/common
         ${ATOMTHREADS_ROOT}/ports/cortex-m
         ${ATOMTHREADS_ROOT}/kernel
+        ${SSD1306_ROOT}/src
 )
 
 link_directories(

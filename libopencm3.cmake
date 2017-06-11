@@ -17,6 +17,9 @@ find_program(ARM_AS arm-none-eabi-as
 find_program(ARM_AR arm-none-eabi-ar
             ${TOOLCHAIN_DIR}/bin)
 
+CMAKE_FORCE_C_COMPILER(${ARM_CC} GNU)
+CMAKE_FORCE_CXX_COMPILER(${ARM_CXX} GNU)
+
 SET(CMAKE_C_COMPILER ${ARM_CC})
 SET(CMAKE_CXX_COMPILER ${ARM_CXX})
 SET(CMAKE_C_ARCHIVE_CREATE ${ARM_AR})

@@ -4,3 +4,6 @@
 [submodule "lib/atomthreads"]
 	path = lib/atomthreads
 	url = git://github.com/kelvinlawson/atomthreads.git
+[submodule "lib/ssd1306_libopencm3"]
+	path = lib/ssd1306_libopencm3
+	url = https://github.com/StanislavLakhtin/ssd1306_libopencm3.git

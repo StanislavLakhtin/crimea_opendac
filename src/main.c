@@ -6,15 +6,17 @@
 
 #include <libopencm3/cm3/nvic.h>
 #include <libopencm3/stm32/exti.h>
-#include <libopencm3/stm32/f1/gpio.h>
+#include <libopencm3/stm32/gpio.h>
 
 #include <atom.h>
+#include <ssd1306_i2c.h>
+#include "crimea_dac.h"
 
 /**
  * External declarations
  */
 extern int board_setup(void);
-extern void test_led_toggle(void);
+extern void display_WakeUp(void);
 extern void encoder_setup(uint32_t *vC);
 extern void encoder_handler(void);
 
@@ -79,14 +81,18 @@ int main(void) {
 }
 
 
-
 static void main_thread_func(uint32_t data __maybe_unused) {
   /* Print message */
-  printf("Hello, world!\n");
-
+  ssd1306_drawWCharStr(0,0,white, wrapDisplay,L"Привет! Это Крым.\nНачинаем.");
+  ssd1306_refresh();
+  uint32_t loop;
+  for (loop = 0; loop < 1000000; ++loop) {
+    __asm__("nop");
+  }
+  ssd1306_drawWCharStr(0,8,white,nowrap,L"Подтяжка USB включена");
+  pullUp_ON();
   /* Loop forever and blink the LED */
   while (1) {
-    test_led_toggle();
     atomTimerDelay(volumeControl);
   }
 
