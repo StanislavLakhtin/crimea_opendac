@@ -85,16 +85,13 @@ static void main_thread_func(uint32_t data __maybe_unused) {
   /* Print message */
   ssd1306_drawWCharStr(0,0,white, wrapDisplay,L"Привет! Это Крым.\nНачинаем.");
   ssd1306_refresh();
-  uint32_t loop;
-  for (loop = 0; loop < 1000000; ++loop) {
-    __asm__("nop");
-  }
   ssd1306_drawWCharStr(0,16,white,nowrap,L"Подтяжка USB включена");
-  pullUp_ON();
+  pcm2707a_busReset();
   ssd1306_refresh();
   /* Loop forever and blink the LED */
   while (1) {
     atomTimerDelay(volumeControl);
+    pcm2707a_setup();
   }
 
 }

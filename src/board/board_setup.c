@@ -34,6 +34,7 @@
 #include <libopencm3/cm3/systick.h>
 #include <libopencm3/cm3/cortex.h>
 #include <libopencm3/cm3/nvic.h>
+#include <libopencm3/stm32/spi.h>
 #include <crimea_dac.h>
 #include <atomport.h>
 #include <libopencm3/stm32/i2c.h>
@@ -47,8 +48,11 @@ static void clock_setup(void) {
 
   /* set clock for I2C */
   rcc_periph_clock_enable(RCC_I2C2);
-  rcc_periph_clock_enable(RCC_AFIO);
 
+  /* Enable SPI1 Periph and gpio clocks */
+  rcc_periph_clock_enable(RCC_SPI1);
+
+  rcc_periph_clock_enable(RCC_AFIO);
   AFIO_MAPR |= AFIO_MAPR_SWJ_CFG_FULL_SWJ_NO_JNTRST;
 }
 
@@ -73,6 +77,45 @@ static void clock_setup(void) {
   usart_enable(USART2);
 }*/
 
+static void spi1_setup(void) {
+
+  /* Configure GPIOs: SS=PA4, SCK=PA5, MISO=PA6 and MOSI=PA7 */
+  gpio_set_mode(GPIOA, GPIO_MODE_OUTPUT_50_MHZ,
+                GPIO_CNF_OUTPUT_ALTFN_PUSHPULL, GPIO4 |
+                                                GPIO5 |
+                                                GPIO7 );
+
+  gpio_set_mode(GPIOA, GPIO_MODE_INPUT, GPIO_CNF_INPUT_FLOAT,
+                GPIO6);
+
+  /* Reset SPI, SPI_CR1 register cleared, SPI is disabled */
+  spi_reset(SPI1);
+
+  /* Set up SPI in Master mode with:
+   * Clock baud rate: 1/64 of peripheral clock frequency
+   * Clock polarity: Idle High
+   * Clock phase: Data valid on 2nd clock pulse
+   * Data frame format: 8-bit
+   * Frame format: MSB First
+   */
+  spi_init_master(SPI1, SPI_CR1_BAUDRATE_FPCLK_DIV_64, SPI_CR1_CPOL_CLK_TO_1_WHEN_IDLE,
+                  SPI_CR1_CPHA_CLK_TRANSITION_2, SPI_CR1_DFF_8BIT, SPI_CR1_MSBFIRST);
+
+  /*
+   * Set NSS management to software.
+   *
+   * Note:
+   * Setting nss high is very important, even if we are controlling the GPIO
+   * ourselves this bit needs to be at least set to 1, otherwise the spi
+   * peripheral will not send any data out.
+   */
+  spi_enable_software_slave_management(SPI1);
+  spi_set_nss_high(SPI1);
+
+  /* Enable SPI1 periph. */
+  spi_enable(SPI1);
+}
+
 /**
  * initialise and start SysTick counter. This will trigger the
  * sys_tick_handler() periodically once interrupts have been enabled
@@ -88,6 +131,14 @@ void gpio_setup(void) {
   gpio_set_mode(USB_PULLUP_PORT, GPIO_MODE_OUTPUT_50_MHZ,
               GPIO_CNF_OUTPUT_PUSHPULL, USB_PULLUP_GPIO);
   pullUp_OFF();
+
+  gpio_set_mode(PCM2707A_CS_PORT, GPIO_MODE_OUTPUT_50_MHZ,
+                GPIO_CNF_OUTPUT_PUSHPULL, PCM2707A_CS_GPIO);
+
+  gpio_set_mode(PCM2707A_SUSPEND_PORT, GPIO_MODE_OUTPUT_50_MHZ,
+                GPIO_CNF_OUTPUT_PUSHPULL, PCM2702A_SUSPEND_GPIO);
+
+  gpio_clear(PCM2707A_SUSPEND_PORT, PCM2702A_SUSPEND_GPIO);
 }
 
 static void i2c_setup(void) {
@@ -155,6 +206,9 @@ int board_setup(void) {
   /* configure system clock, user LED and UART */
   clock_setup();
   gpio_setup();
+  spi1_setup();
+  pcm2707a_busReset();
+  pcm2707a_setup();
   i2c_setup();
   display_WakeUp();
 
