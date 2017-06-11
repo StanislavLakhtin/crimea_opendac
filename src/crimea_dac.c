@@ -33,7 +33,6 @@ void pcm2707a_busReset(void) {
     __asm__("nop");
   }
   pullUp_ON();
-  gpio_clear(PCM2707A_SUSPEND_PORT, PCM2702A_SUSPEND_GPIO);
 }
 
 void pcm2707a_setup(void) {
@@ -60,5 +59,4 @@ void pcm2707a_setup(void) {
   pcm2707a_spi_send (PCM707A_WORD, USB_AUX_HID_DEVICE_ID_2);
   pcm2707a_spi_send (PCM707A_WORD, USB_AUX_HID_DEVICE_ID_3);
   gpio_set(PCM2707A_CS_PORT, PCM2707A_CS_GPIO);
-  gpio_set(PCM2707A_SUSPEND_PORT, PCM2702A_SUSPEND_GPIO);
 }

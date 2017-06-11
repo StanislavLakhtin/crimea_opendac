@@ -23,13 +23,13 @@
 // 2 bytes
 #define USB_PRODUCT_ID 2704
 // 16 bytes
-#define USB_PRODUCT_NAME "Crimea USB DAC v1"
+#define USB_PRODUCT_NAME "Crimea USBDAC v1"
 // 32 bytes
 #define USB_VENDOR_STRING  "Stanslav Lakhtin DIY project    "
 // 1 byte (0x80 -- bus powered)
 #define USB_POWER_ATTRIBUTE 0x80
 // 1 byte
-#define USB_MAX_POWER 0x7d
+#define USB_MAX_POWER 0xfa
 //3 bytes
 #define USB_AUX_HID_DEVICE_ID_1 0x0a
 #define USB_AUX_HID_DEVICE_ID_2 0x93
