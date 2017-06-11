@@ -89,8 +89,9 @@ static void main_thread_func(uint32_t data __maybe_unused) {
   for (loop = 0; loop < 1000000; ++loop) {
     __asm__("nop");
   }
-  ssd1306_drawWCharStr(0,8,white,nowrap,L"Подтяжка USB включена");
+  ssd1306_drawWCharStr(0,16,white,nowrap,L"Подтяжка USB включена");
   pullUp_ON();
+  ssd1306_refresh();
   /* Loop forever and blink the LED */
   while (1) {
     atomTimerDelay(volumeControl);
