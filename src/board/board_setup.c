@@ -127,7 +127,7 @@ static void systick_setup(void) {
   systick_counter_enable();
 }
 
-void gpio_setup(void) {
+static void gpio_setup(void) {
   gpio_set_mode(USB_PULLUP_PORT, GPIO_MODE_OUTPUT_50_MHZ,
               GPIO_CNF_OUTPUT_PUSHPULL, USB_PULLUP_GPIO);
   pullUp_OFF();
@@ -137,7 +137,6 @@ void gpio_setup(void) {
 
   gpio_set_mode(PCM2707A_SUSPEND_PORT, GPIO_MODE_INPUT,
                 GPIO_CNF_INPUT_FLOAT, PCM2702A_SUSPEND_GPIO);
-
 }
 
 static void i2c_setup(void) {
